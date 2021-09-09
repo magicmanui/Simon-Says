@@ -29,6 +29,7 @@ using namespace std;
 #define SW_CLK 5
 #define SW_SDA 18  
 
+int loseCount = 3;
 IPAddress ip(192, 168, 1, 40);
 IPAddress dns(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 1);
@@ -46,7 +47,7 @@ bool isFinished = true;
 bool clientIsFinished = true;
 int clientScore = 0;
 int currentButton = -1;
-int currentComplexity = 4;
+int currentComplexity = 3;
 int currentSpeed = 0.;
 int sleepTime;
 list<int> buttonOrder = {};
@@ -212,8 +213,8 @@ void basicSimonSaysClient(){
       tone(PIN_BUZZER, 415, 500, 1);
       tone(PIN_BUZZER, 392, 500, 1);
       noTone(PIN_BUZZER, 1);
-      client.print((char)2);
       client.print((char)3);
+      client.print((char)2);
       win = 0;
       while (1)
       { // while true
@@ -320,14 +321,43 @@ void clientLoop(){
   }
   if(win && !clientWin){
     while(1){
+      u8g2.firstPage();
+      do
+      {
+        // write you lose on screen
+        u8g2.setFont(u8g2_font_ncenB14_tr);
+        u8g2.drawStr(8, 16, "you win!");
+      } while (u8g2.nextPage());
        Serial.println("ich habe gewonnen");
     }
   }else if(!win && clientWin){
     while(1){
+      u8g2.firstPage();
+      do
+      {
+        // write you lose on screen
+        u8g2.setFont(u8g2_font_ncenB14_tr);
+        u8g2.drawStr(8, 16, "you lose!");
+      } while (u8g2.nextPage());
       Serial.println("ich habe verloren");
     }
   }else if(!win && !clientWin){
-
+    if(loseCount){
+      --loseCount;
+    }
+    else{
+      while(1){
+        u8g2.firstPage();
+        do
+        {
+          // write you lose on screen
+          u8g2.setFont(u8g2_font_ncenB14_tr);
+          u8g2.drawStr(8, 16, "Tie!");
+        } while (u8g2.nextPage());
+      }
+    }
+  }else{
+    loseCount = 3;
   }
   win = 1;
   clientWin = 1;
@@ -655,14 +685,42 @@ void serverLoop()
       if(win && !clientWin){
         while(1){
           Serial.println("ich habe gewonnen");
-        }
+          u8g2.firstPage();
+          do
+          {
+            // write you lose on screen
+            u8g2.setFont(u8g2_font_ncenB14_tr);
+            u8g2.drawStr(8, 16, "you win!");
+          } while (u8g2.nextPage());
+            }
       }else if(!win && clientWin){
         while(1){
-          Serial.println("ich habe verloren");
-        }
+          u8g2.firstPage();
+          do
+          {
+            // write you lose on screen
+            u8g2.setFont(u8g2_font_ncenB14_tr);
+            u8g2.drawStr(8, 16, "you lose!");
+          } while (u8g2.nextPage());
+              Serial.println("ich habe verloren");
+            }
       }else if(!win && !clientWin){
-        
+        if(loseCount){
+          --loseCount;
+        }
+        else{
+          while(1){
+            u8g2.firstPage();
+            do
+            {
+              // write you lose on screen
+              u8g2.setFont(u8g2_font_ncenB14_tr);
+              u8g2.drawStr(8, 16, "Tie!");
+            } while (u8g2.nextPage());
+          }
+        }
       }else{
+        loseCount = 3;
         ++currentComplexity;
       }
       win = 1;
